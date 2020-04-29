@@ -7,10 +7,16 @@ import (
 	"strconv"
 )
 
-//第一步，先开发对应的接口
-//第二步，实现定义的接口
+/*
+	先开发对应的接口
+		数据库连接
+		插入
+		删除
+		更新
+		查找
+*/
+
 type IProduct interface {
-	//连接数据
 	Conn() error
 	Insert(*datamodels.Product) (int64, error)
 	Delete(int64) bool
@@ -19,6 +25,9 @@ type IProduct interface {
 	SelectAll() ([]*datamodels.Product, error)
 }
 
+/*
+	实现定义的接口
+*/
 type ProductManager struct {
 	table string
 	//将数据库连接存起来

@@ -13,12 +13,10 @@ type IProductService interface {
 	UpdateProduct(product *datamodels.Product) error
 }
 
-//多次一举?rep中定义的是最底层的操作,service里会有业务逻辑,比如商品查询完后,可能会进行判断
 type ProductService struct {
 	productRepository repositories.IProduct
 }
 
-//初始化函数
 func NewProductService(repository repositories.IProduct) IProductService {
 	return &ProductService{repository}
 }
