@@ -3,6 +3,8 @@ package controllers
 import (
 	"shop-iris/datamodels"
 	"shop-iris/services"
+	"shop-iris/tool"
+	"strconv"
 
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
@@ -50,4 +52,34 @@ func (c *UserController) PostRegister() {
 	}
 	c.Ctx.Redirect("/user/login")
 	return
+}
+func (c *UserController) GetLogin() mvc.View {
+	return mvc.View{
+		Name: "/user/login.html",
+	}
+}
+
+//除了可以通过redirect跳转,也可以用mvc.Response
+func (c *UserController) PostLogin() mvc.Response {
+	//1.获取用户提交的表单信息
+	var (
+		userName = c.Ctx.FormValue("userName")
+		password = c.Ctx.FormValue("password")
+	)
+	//2、验证账号密码正确
+	user, isOk := c.Service.IsPwdSuccess(userName, password)
+	if !isOk {
+		return mvc.Response{
+			Path: "/user/login",
+		}
+	}
+
+	//3、写入用户ID到cookie中
+	tool.GlobalCookie(c.Ctx, "uid", strconv.FormatInt(user.ID, 10))
+	c.Session.Set("userID", strconv.FormatInt(user.ID, 10))
+
+	return mvc.Response{
+		Path: "/product/",
+	}
+
 }
