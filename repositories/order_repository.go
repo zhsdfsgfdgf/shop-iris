@@ -37,7 +37,7 @@ func (o *OrderMangerRepository) Conn() error {
 		o.mysqlConn = mysql
 	}
 	if o.table == "" {
-		o.table = "order"
+		o.table = "orders"
 	}
 	return nil
 }
