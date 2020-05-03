@@ -15,11 +15,10 @@ type ProductController struct {
 }
 
 func (p *ProductController) GetDetail() mvc.View {
-	product, err := p.ProductService.GetProductByID(1)
+	product, err := p.ProductService.GetProductByID(3)
 	if err != nil {
 		p.Ctx.Application().Logger().Error(err)
 	}
-
 	return mvc.View{
 		Layout: "shared/productLayout.html",
 		Name:   "product/view.html",
