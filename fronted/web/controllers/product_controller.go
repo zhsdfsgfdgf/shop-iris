@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"shop-iris/datamodels"
 	"shop-iris/services"
 	"strconv"
@@ -63,7 +62,6 @@ func (p *ProductController) GetOrder() mvc.View {
 			ProductId:   int64(productID),
 			OrderStatus: datamodels.OrderSuccess,
 		}
-		fmt.Println(order)
 		//新建订单
 		orderID, err = p.OrderService.InsertOrder(order)
 		if err != nil {
