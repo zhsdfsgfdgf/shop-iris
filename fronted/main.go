@@ -7,6 +7,7 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 
+	"shop-iris/fronted/middleware"
 	"shop-iris/fronted/web/controllers"
 	"shop-iris/repositories"
 	"shop-iris/services"
@@ -54,7 +55,9 @@ func main() {
 	//注册product控制器
 	product := repositories.NewProductManager("product", db)
 	productService := services.NewProductService(product)
-	pro := mvc.New(app.Party("/product"))
+	proProduct := app.Party("/product")
+	proProduct.Use(middleware.AuthConProduct)
+	pro := mvc.New(proProduct)
 	pro.Register(productService, ctx, sess.Start)
 	pro.Handle(new(controllers.ProductController))
 
