@@ -1,14 +1,49 @@
 package controllers
 
 import (
+	"os"
 	"shop-iris/datamodels"
 	"shop-iris/services"
 	"strconv"
+	"text/template"
 
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 	"github.com/kataras/iris/sessions"
 )
+
+var (
+	//生成的Html保存目录
+	htmlOutPath = "./fronted/web/htmlProductShow/"
+	//静态文件模版目录
+	templatePath = "./fronted/web/views/template/"
+)
+
+//生成html静态文件
+//template是go自带的模板文件
+func generateStaticHtml(ctx iris.Context, template *template.Template, fileName string, product *datamodels.Product) {
+	//1.判断静态文件是否存在
+	if exist(fileName) {
+		err := os.Remove(fileName)
+		if err != nil {
+			ctx.Application().Logger().Error(err)
+		}
+	}
+	//2.生成静态文件
+	file, err := os.OpenFile(fileName, os.O_CREATE, os.ModePerm)
+	if err != nil {
+		ctx.Application().Logger().Error(err)
+	}
+	//注意关掉
+	defer file.Close()
+	template.Execute(file, &product)
+}
+
+//判断文件是否存在
+func exist(fileName string) bool {
+	_, err := os.Stat(fileName)
+	return err == nil || os.IsExist(err)
+}
 
 type ProductController struct {
 	Ctx            iris.Context
