@@ -25,6 +25,7 @@ func main() {
 	tmplate := iris.HTML("./web/views", ".html").Layout("shared/layout.html").Reload(true)
 	app.RegisterView(tmplate)
 	//4.设置模板
+	//访问方式http://127.0.0.1:8082/public/js/bootstrap.min.js
 	app.StaticWeb("/public", "./web/public")
 	//访问生成好的html静态文件
 	app.StaticWeb("/html", "./web/htmlProductShow")
