@@ -87,3 +87,15 @@ func EnPwdCode(pwd []byte) (string, error) {
 	}
 	return base64.StdEncoding.EncodeToString(result), err
 }
+
+//解密
+func DePwdCode(pwd string) ([]byte, error) {
+	//解密base64字符串
+	pwdByte, err := base64.StdEncoding.DecodeString(pwd)
+	if err != nil {
+		return nil, err
+	}
+	//执行AES解密
+	return AesDeCrypt(pwdByte, PwdKey)
+
+}
