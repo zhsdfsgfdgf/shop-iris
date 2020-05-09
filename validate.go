@@ -6,12 +6,74 @@ import (
 	"net/http"
 	"shop-iris/common"
 	"shop-iris/encrypt"
+	"sync"
 )
+
+//设置集群地址，最好内外IP
+var hostArray = []string{"127.0.0.1", "127.0.0.1"}
+
+//设置本机ip,会根据本机ip,和我们获取到的集群ip,比如定位我们的数据在哪台服务器上,获取到那台服务器的ip进行比对
+//如果不是localhostip,那么localhost会充当代理的方式访问服务器,如果等于,就直接访问validate.go这台服务器
+var localHost = "127.0.0.1"
+
+var port = "8081"
+
+var hashConsistent *common.Consistent
+
+//用来存放控制信息
+type AccessControl struct {
+	//用来存放用户想要存放的信息
+	sourcesArray map[int]interface{}
+	//map在高并发下是不安全的
+	sync.RWMutex
+}
+
+//创建全局变量,存储用户信息 id -> data
+var accessControl = &AccessControl{sourcesArray: make(map[int]interface{})}
+
+//获取指定的数据
+func (m *AccessControl) GetNewRecord(uid int) interface{} {
+	//读锁
+	m.RWMutex.RLock()
+	defer m.RWMutex.RUnlock()
+	data := m.sourcesArray[uid]
+	return data
+}
+
+//设置记录
+func (m *AccessControl) SetNewRecord(uid int) {
+	m.RWMutex.Lock()
+	m.sourcesArray[uid] = "zhaoheng"
+	m.RWMutex.Unlock()
+}
 
 //执行正常业务逻辑
 func Check(w http.ResponseWriter, r *http.Request) {
 	//执行正常业务逻辑
 	fmt.Println("验证成功,执行check")
+}
+
+//获取分布式共享数据
+func (m *AccessControl) GetDistributedRight(req *http.Request) bool {
+	//获取用户UID
+	uid, err := req.Cookie("uid")
+	if err != nil {
+		return false
+	}
+
+	//采用一致性hash算法，根据用户ID，判断获取具体机器
+	hostRequest, err := hashConsistent.Get(uid.Value)
+	if err != nil {
+		return false
+	}
+
+	//判断是否为本机
+	if hostRequest == localHost {
+		//执行本机数据读取和校验
+	} else {
+		//不是本机充当代理访问数据返回结果
+	}
+
 }
 
 //统一验证拦截器，每个接口都需要提前验证
