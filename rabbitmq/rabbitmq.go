@@ -1,17 +1,19 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
-	"github.com/streadway/amqp"
-
+	"shop-iris/datamodels"
 	"shop-iris/services"
 	"sync"
+
+	"github.com/streadway/amqp"
 )
 
 //连接信息 固定格式:amqp://用户名:密码@地址:5672:/vh
-const MQURL = "amqp://xxx:xxx@47.105.83.xx:5672/imooc"
+const MQURL = "amqp://imoocuser:imoocuser@47.105.83.40:5672/imooc"
 
 //rabbitMQ结构体
 type RabbitMQ struct {
@@ -118,7 +120,7 @@ func (r *RabbitMQ) ConsumeSimple(orderService services.IOrderService, productSer
 		fmt.Println(err)
 	}
 
-	//消费者流控
+	//消费者流控,防止暴库
 	r.channel.Qos(
 		1,     //当前消费者一次能接受的最大消息数量
 		0,     //服务器传递的最大容量（以八位字节为单位）
@@ -131,7 +133,7 @@ func (r *RabbitMQ) ConsumeSimple(orderService services.IOrderService, productSer
 		//用来区分多个消费者
 		"", // consumer
 		//是否自动应答
-		//这里要改掉，我们用手动应答
+		//这里要改掉，我们用手动应答,保证消息正确消费完后才告诉rq进行下一个消息发送
 		false, // auto-ack
 		//是否独有
 		false, // exclusive
@@ -151,6 +153,25 @@ func (r *RabbitMQ) ConsumeSimple(orderService services.IOrderService, productSer
 		for d := range msgs {
 			//消息逻辑处理，可以自行设计逻辑
 			log.Printf("Received a message: %s", d.Body)
+			message := &datamodels.Message{}
+			err := json.Unmarshal([]byte(d.Body), message)
+			if err != nil {
+				fmt.Println(err)
+			}
+			//插入订单
+			_, err = orderService.InsertOrderByMessage(message)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			//扣除商品数量
+			err = productService.SubNumberOne(message.ProductID)
+			if err != nil {
+				fmt.Println(err)
+			}
+			//如果为true表示确认所有未确认的消息,一般用在批量消费中
+			//为false表示确认当前消息,rq就会删除
+			d.Ack(false)
 		}
 	}()
 
