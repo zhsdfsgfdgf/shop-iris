@@ -1,7 +1,7 @@
 ## Go商城秒杀项目
 特性：
 一致性哈希算法实现分布式验证；RabbitMQ进行下单异步处理，流量削峰；Go接口实现数量控制；AES双向加密Cookie；页面静态化，CDN部署；前端限流；wrk压测等。
-## 项目流程
+## 项目架构图
   ![image](https://github.com/zhsdfsgfdgf/istio-note/blob/master/images/miaosha.png)
 
 ## 本地开发
